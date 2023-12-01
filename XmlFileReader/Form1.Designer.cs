@@ -160,7 +160,7 @@ namespace XmlFileReader
             ((System.ComponentModel.ISupportInitialize)(this.mainDataGridView)).BeginInit();
             this.SuspendLayout();
             // 
-            // panel1
+            // containerPanel
             // 
             this.containerPanel.Controls.Add(this.mainDataGridView);
             this.containerPanel.Controls.Add(this.mainTreeView);
@@ -173,7 +173,7 @@ namespace XmlFileReader
             this.containerPanel.Size = new System.Drawing.Size(831, 462);
             this.containerPanel.TabIndex = 0;
             // 
-            // uiDGV_Main
+            // mainDataGridView
             // 
             this.mainDataGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.mainDataGridView.Location = new System.Drawing.Point(267, 93);
@@ -183,14 +183,14 @@ namespace XmlFileReader
             this.mainDataGridView.Size = new System.Drawing.Size(495, 317);
             this.mainDataGridView.TabIndex = 4;
             // 
-            // treeView1
+            // mainTreeView
             // 
             this.mainTreeView.Location = new System.Drawing.Point(35, 93);
             this.mainTreeView.Name = "mainTreeView";
             this.mainTreeView.Size = new System.Drawing.Size(216, 317);
             this.mainTreeView.TabIndex = 3;
             // 
-            // uiBtn_Parse
+            // btnFileParser
             // 
             this.btnFileParser.Location = new System.Drawing.Point(652, 36);
             this.btnFileParser.Name = "btnFileParser";
@@ -199,7 +199,7 @@ namespace XmlFileReader
             this.btnFileParser.Text = "파싱";
             this.btnFileParser.UseVisualStyleBackColor = true;
             // 
-            // uiBtn_Load
+            // btnFileLoader
             // 
             this.btnFileLoader.Location = new System.Drawing.Point(504, 36);
             this.btnFileLoader.Name = "btnFileLoader";
@@ -208,9 +208,11 @@ namespace XmlFileReader
             this.btnFileLoader.Text = "로딩";
             this.btnFileLoader.UseVisualStyleBackColor = true;
             // 
-            // uiTxt_Filename
+            // fileNameContainer
             // 
-            this.fileNameContainer.Location = new System.Drawing.Point(35, 34);
+            this.fileNameContainer.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.fileNameContainer.Location = new System.Drawing.Point(35, 36);
             this.fileNameContainer.Name = "fileNameContainer";
             this.fileNameContainer.Size = new System.Drawing.Size(428, 25);
             this.fileNameContainer.TabIndex = 0;
