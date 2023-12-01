@@ -1,11 +1,29 @@
 ﻿
+using System;
+using System.Data;
+using System.Drawing;
+using System.IO;
+using System.Windows.Forms;
+
 namespace XmlFileReader
 {
+    public class Student
+    {
+        public string Name { get; set; }
+        public int Age { get; set; }
+        public string Grade { get; set; }
+        public string Major { get; set; }
+    }
+
     /// <summary>
     /// <para>Form 생성 및 사용해보기</para>
     /// <para>1. 생성된 Form은 partial class임, 즉 완성될 클래스를 여러 맥락으로 나눌 수 있음.</para>
     /// <para>2. System.ComponentModel.IContainer: 아래 설명 참고 </para>
     /// <para>3. protected override void Dispose: 아래 설명 참고</para>
+    /// <para>4. 가급적 UI 변경 등 로직은 디자이너 파일에 작성을 권장</para>
+    /// <para>
+    ///     메인 로직은 되도록 간결히, UI에 변경사항 없도록 해서 프로그램이 STA 모델을 보장하도록
+    /// </para>
     /// </summary>
     partial class Form1
     {
@@ -132,94 +150,236 @@ namespace XmlFileReader
         /// </summary>
         private void InitializeComponent()
         {
-            this.panel1 = new System.Windows.Forms.Panel();
-            this.textBox1 = new System.Windows.Forms.TextBox();
-            this.button1 = new System.Windows.Forms.Button();
-            this.button2 = new System.Windows.Forms.Button();
-            this.treeView1 = new System.Windows.Forms.TreeView();
-            this.dataGridView1 = new System.Windows.Forms.DataGridView();
-            this.panel1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
+            this.containerPanel = new System.Windows.Forms.Panel();
+            this.mainDataGridView = new System.Windows.Forms.DataGridView();
+            this.mainTreeView = new System.Windows.Forms.TreeView();
+            this.btnFileParser = new System.Windows.Forms.Button();
+            this.btnFileLoader = new System.Windows.Forms.Button();
+            this.fileNameContainer = new System.Windows.Forms.TextBox();
+            this.containerPanel.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.mainDataGridView)).BeginInit();
             this.SuspendLayout();
             // 
             // panel1
             // 
-            this.panel1.Controls.Add(this.dataGridView1);
-            this.panel1.Controls.Add(this.treeView1);
-            this.panel1.Controls.Add(this.button2);
-            this.panel1.Controls.Add(this.button1);
-            this.panel1.Controls.Add(this.textBox1);
-            this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panel1.Location = new System.Drawing.Point(0, 0);
-            this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(800, 450);
-            this.panel1.TabIndex = 0;
+            this.containerPanel.Controls.Add(this.mainDataGridView);
+            this.containerPanel.Controls.Add(this.mainTreeView);
+            this.containerPanel.Controls.Add(this.btnFileParser);
+            this.containerPanel.Controls.Add(this.btnFileLoader);
+            this.containerPanel.Controls.Add(this.fileNameContainer);
+            this.containerPanel.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.containerPanel.Location = new System.Drawing.Point(0, 0);
+            this.containerPanel.Name = "containerPanel";
+            this.containerPanel.Size = new System.Drawing.Size(831, 462);
+            this.containerPanel.TabIndex = 0;
             // 
-            // textBox1
+            // uiDGV_Main
             // 
-            this.textBox1.Location = new System.Drawing.Point(35, 34);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(428, 25);
-            this.textBox1.TabIndex = 0;
-            // 
-            // button1
-            // 
-            this.button1.Location = new System.Drawing.Point(504, 36);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(110, 23);
-            this.button1.TabIndex = 1;
-            this.button1.Text = "button1";
-            this.button1.UseVisualStyleBackColor = true;
-            // 
-            // button2
-            // 
-            this.button2.Location = new System.Drawing.Point(652, 36);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(110, 23);
-            this.button2.TabIndex = 2;
-            this.button2.Text = "button2";
-            this.button2.UseVisualStyleBackColor = true;
+            this.mainDataGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.mainDataGridView.Location = new System.Drawing.Point(267, 93);
+            this.mainDataGridView.Name = "mainDataGridView";
+            this.mainDataGridView.RowHeadersWidth = 51;
+            this.mainDataGridView.RowTemplate.Height = 27;
+            this.mainDataGridView.Size = new System.Drawing.Size(495, 317);
+            this.mainDataGridView.TabIndex = 4;
             // 
             // treeView1
             // 
-            this.treeView1.Location = new System.Drawing.Point(35, 93);
-            this.treeView1.Name = "treeView1";
-            this.treeView1.Size = new System.Drawing.Size(216, 317);
-            this.treeView1.TabIndex = 3;
+            this.mainTreeView.Location = new System.Drawing.Point(35, 93);
+            this.mainTreeView.Name = "mainTreeView";
+            this.mainTreeView.Size = new System.Drawing.Size(216, 317);
+            this.mainTreeView.TabIndex = 3;
             // 
-            // dataGridView1
+            // uiBtn_Parse
             // 
-            this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataGridView1.Location = new System.Drawing.Point(267, 93);
-            this.dataGridView1.Name = "dataGridView1";
-            this.dataGridView1.RowHeadersWidth = 51;
-            this.dataGridView1.RowTemplate.Height = 27;
-            this.dataGridView1.Size = new System.Drawing.Size(495, 317);
-            this.dataGridView1.TabIndex = 4;
+            this.btnFileParser.Location = new System.Drawing.Point(652, 36);
+            this.btnFileParser.Name = "btnFileParser";
+            this.btnFileParser.Size = new System.Drawing.Size(110, 23);
+            this.btnFileParser.TabIndex = 2;
+            this.btnFileParser.Text = "파싱";
+            this.btnFileParser.UseVisualStyleBackColor = true;
+            // 
+            // uiBtn_Load
+            // 
+            this.btnFileLoader.Location = new System.Drawing.Point(504, 36);
+            this.btnFileLoader.Name = "btnFileLoader";
+            this.btnFileLoader.Size = new System.Drawing.Size(110, 23);
+            this.btnFileLoader.TabIndex = 1;
+            this.btnFileLoader.Text = "로딩";
+            this.btnFileLoader.UseVisualStyleBackColor = true;
+            // 
+            // uiTxt_Filename
+            // 
+            this.fileNameContainer.Location = new System.Drawing.Point(35, 34);
+            this.fileNameContainer.Name = "fileNameContainer";
+            this.fileNameContainer.Size = new System.Drawing.Size(428, 25);
+            this.fileNameContainer.TabIndex = 0;
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
-            this.Controls.Add(this.panel1);
+            this.ClientSize = new System.Drawing.Size(831, 462);
+            this.Controls.Add(this.containerPanel);
             this.Name = "Form1";
             this.Text = "Form1";
-            this.panel1.ResumeLayout(false);
-            this.panel1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
+            this.containerPanel.ResumeLayout(false);
+            this.containerPanel.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.mainDataGridView)).EndInit();
             this.ResumeLayout(false);
 
         }
 
         #endregion
 
-        private System.Windows.Forms.Panel panel1;
-        private System.Windows.Forms.TextBox textBox1;
-        private System.Windows.Forms.DataGridView dataGridView1;
-        private System.Windows.Forms.TreeView treeView1;
-        private System.Windows.Forms.Button button2;
-        private System.Windows.Forms.Button button1;
+        /// <summary>
+        /// <para>도구 상자를 통해 실제 생성된 UI</para>
+        /// </summary>
+        private System.Windows.Forms.Panel containerPanel;
+        private System.Windows.Forms.TextBox fileNameContainer;
+        private System.Windows.Forms.DataGridView mainDataGridView;
+        private System.Windows.Forms.TreeView mainTreeView;
+        private System.Windows.Forms.Button btnFileParser;
+        private System.Windows.Forms.Button btnFileLoader;
+
+        /// <summary>
+        /// <para>이벤트 초기화 메서드, 메인 로직에서 호출됨</para>
+        /// <para>
+        ///     별도의 멤버를 만들지 않아도 작동과 호출을 보장하는 prop도 있음, 예) Load
+        ///     해당 prop에서 함수를 호출해줄 수 있음
+        /// </para>
+        /// <para>
+        ///     현재 클래스의 멤버인 UI에 이벤트를 정의하고 함수를 호출할 수 있음
+        ///     == button onClick={handleLoaderClick}
+        /// </para>
+        /// </summary>
+        private void InitEvent()
+        {
+            Load += HandleLoadedMainForm;
+            btnFileLoader.Click += HandleLoaderClick;
+            btnFileParser.Click += HandleParserClick;
+        }
+
+        /// <summary>
+        /// <para>this.Load를 만족할 때 호출될 함수, 데이터 테이블 디자인 초기화 함수 호출</para>
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void HandleLoadedMainForm(object sender, EventArgs e)
+        {
+            InitDataTableDesign();
+        }
+
+        private void InitDataTableDesign()
+        {
+            try
+            {
+                mainDataGridView.AutoGenerateColumns = true;
+                mainDataGridView.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+                this.mainDataGridView.EditMode = DataGridViewEditMode.EditOnEnter;
+
+                mainDataGridView.BorderStyle = BorderStyle.None;
+                mainDataGridView.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(238, 239, 249);
+                mainDataGridView.CellBorderStyle = DataGridViewCellBorderStyle.Single;
+                mainDataGridView.DefaultCellStyle.Font = new Font("굴림", 11, FontStyle.Bold);
+
+                mainDataGridView.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+                mainDataGridView.DefaultCellStyle.SelectionBackColor = Color.LightSkyBlue;
+                mainDataGridView.DefaultCellStyle.SelectionForeColor = Color.WhiteSmoke;
+                mainDataGridView.BackgroundColor = Color.White;
+
+                mainDataGridView.EnableHeadersVisualStyles = false;
+                mainDataGridView.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
+                mainDataGridView.ColumnHeadersDefaultCellStyle.Font = new Font("굴림", 11, FontStyle.Bold);
+
+                mainDataGridView.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(15, 50, 72);
+
+                mainDataGridView.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+                mainDataGridView.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
+
+                mainDataGridView.RowHeadersDefaultCellStyle.BackColor = Color.FromArgb(15, 50, 72);
+                mainDataGridView.RowHeadersDefaultCellStyle.Font = new Font("굴림", 11, FontStyle.Bold);
+                mainDataGridView.RowHeadersDefaultCellStyle.ForeColor = Color.White;
+                mainDataGridView.RowHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            }
+            catch (Exception exception)
+            {
+                MessageBox.Show(exception.ToString(), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        /// <summary>
+        /// <para>UI 클릭을 만족할 때 호출될 함수, 파일 로드 함수 호출</para>
+        /// <para>
+        ///     파일 로드 함수에서는 OpenFileDialog 인스턴스 만들고 Filter와 Title prop 초기화
+        ///     인스턴스의 ShowDialog()를 통해 대화상자 반환 값을 확인받고 파일 이름 텍스트 박스 값을 바꿈
+        /// </para>
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void HandleLoaderClick(object sender, EventArgs e)
+        {
+            GetOpenFile();
+        }
+
+        private void GetOpenFile()
+        {
+            OpenFileDialog configedOpenFileDialog = new OpenFileDialog
+            {
+                Filter = "XML files (*.xml)|*.xml|All files (*.*)|*.*",
+                Title = "XML 파일 예제창"
+            };
+
+            if (configedOpenFileDialog.ShowDialog() == DialogResult.OK) fileNameContainer.Text = configedOpenFileDialog.FileName;
+        }
+
+        /// <summary>
+        /// <para>UI 클릭을 만족할 때 호출될 함수, 파일 파싱 함수 호출</para>
+        /// <para>1.파일 이름 텍스트 값을 반환 받음</para>
+        /// <para>2. 파일 이름에 해당하는 파일이 있는지 확인하여 조건문 실행</para>
+        /// <para>
+        ///     신기한 점: 여기서 File은 현재 앱 전체의 파일을 뜻하나? 그렇지 않고서는 대조해서 결과 알아낼 수 없을텐데
+        /// </para>
+        /// <para>3. DataSet 인스턴스 생성, 현재 파일 명에 해당하는 XML을 읽는 로직 시도해보고 실패하면 중단</para>
+        /// <para>4. 인스턴스의 조건 조회하고 GetDataTable 함수 호출한 뒤 DataGridView의 DataSource로 대입하기</para>
+        /// <para>
+        ///     해당 인스턴스가 null 아닌지, 해당 인스턴스의 Tables.Count와 Tables[0].Rows.Count가 0을 넘는지
+        /// </para>
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void HandleParserClick(object sender, EventArgs e)
+        {
+            string fileName = fileNameContainer.Text;
+
+            if (File.Exists(fileName) == false)
+            {
+                MessageBox.Show("File does not exist.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            DataSet currentXmlFileToDataSet = new DataSet();
+
+            try
+            {
+                currentXmlFileToDataSet.ReadXml(fileName);
+            }
+            catch (Exception exception)
+            {
+                MessageBox.Show(exception.ToString(), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            if (currentXmlFileToDataSet != null && currentXmlFileToDataSet.Tables.Count > 0 && currentXmlFileToDataSet.Tables[0].Rows.Count > 0)
+            {
+                mainDataGridView.DataSource = GetDataTable(currentXmlFileToDataSet);
+            }
+        }
+
+        private DataTable GetDataTable(DataSet currentDataSet)
+        {
+            return currentDataSet.Tables[0];
+        }
     }
 }
 
