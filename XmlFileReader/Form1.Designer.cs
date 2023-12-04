@@ -362,11 +362,11 @@ namespace XmlFileReader
                 return;
             }
 
-            DataSet currentXmlFileToDataSet = new DataSet();
+            // DataSet currentXmlFileToDataSet = new DataSet();
 
             try
             {
-                currentXmlFileToDataSet.ReadXml(fileName);
+                // currentXmlFileToDataSet.ReadXml(fileName);
                 GetXmlToTreeView(fileName);
             }
             catch (Exception exception)
