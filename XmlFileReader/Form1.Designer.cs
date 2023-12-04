@@ -258,58 +258,9 @@ namespace XmlFileReader
         /// </summary>
         private void InitEvent()
         {
-            Load += HandleLoadedMainForm;
             btnFileLoader.Click += HandleLoaderClick;
             btnFileParser.Click += HandleParserClick;
             mainTreeView.AfterSelect += HandleMainTreeView;
-        }
-
-        /// <summary>
-        /// <para>this.Load를 만족할 때 호출될 함수, 데이터 테이블 디자인 초기화 함수 호출</para>
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void HandleLoadedMainForm(object sender, EventArgs e)
-        {
-            InitDataTableDesign();
-        }
-
-        private void InitDataTableDesign()
-        {
-            try
-            {
-                mainDataGridView.AutoGenerateColumns = true;
-                mainDataGridView.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-                this.mainDataGridView.EditMode = DataGridViewEditMode.EditOnEnter;
-
-                mainDataGridView.BorderStyle = BorderStyle.None;
-                mainDataGridView.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(238, 239, 249);
-                mainDataGridView.CellBorderStyle = DataGridViewCellBorderStyle.Single;
-                mainDataGridView.DefaultCellStyle.Font = new Font("굴림", 11, FontStyle.Bold);
-
-                mainDataGridView.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-                mainDataGridView.DefaultCellStyle.SelectionBackColor = Color.LightSkyBlue;
-                mainDataGridView.DefaultCellStyle.SelectionForeColor = Color.WhiteSmoke;
-                mainDataGridView.BackgroundColor = Color.White;
-
-                mainDataGridView.EnableHeadersVisualStyles = false;
-                mainDataGridView.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
-                mainDataGridView.ColumnHeadersDefaultCellStyle.Font = new Font("굴림", 11, FontStyle.Bold);
-
-                mainDataGridView.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(15, 50, 72);
-
-                mainDataGridView.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-                mainDataGridView.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
-
-                mainDataGridView.RowHeadersDefaultCellStyle.BackColor = Color.FromArgb(15, 50, 72);
-                mainDataGridView.RowHeadersDefaultCellStyle.Font = new Font("굴림", 11, FontStyle.Bold);
-                mainDataGridView.RowHeadersDefaultCellStyle.ForeColor = Color.White;
-                mainDataGridView.RowHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            }
-            catch (Exception exception)
-            {
-                MessageBox.Show(exception.ToString(), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
         }
 
         /// <summary>
@@ -339,59 +290,55 @@ namespace XmlFileReader
 
         /// <summary>
         /// <para>UI 클릭을 만족할 때 호출될 함수, 파일 파싱 함수 호출</para>
-        /// <para>1.파일 이름 텍스트 값을 반환 받음</para>
+        /// <para>1. 파일 이름 텍스트 값을 반환 받음</para>
         /// <para>2. 파일 이름에 해당하는 파일이 있는지 확인하여 조건문 실행</para>
         /// <para>
         ///     신기한 점: 여기서 File은 현재 앱 전체의 파일을 뜻하나? 그렇지 않고서는 대조해서 결과 알아낼 수 없을텐데
         /// </para>
-        /// <para>3. DataSet 인스턴스 생성, 현재 파일 명에 해당하는 XML을 읽는 로직 시도해보고 실패하면 중단</para>
-        /// <para>4. 인스턴스의 조건 조회하고 GetDataTable 함수 호출한 뒤 DataGridView의 DataSource로 대입하기</para>
-        /// <para>
-        ///     해당 인스턴스가 null 아닌지, 해당 인스턴스의 Tables.Count와 Tables[0].Rows.Count가 0을 넘는지
-        /// </para>
+        /// <para>3. TreeView Set 함수 호출 혹은 예외 처리</para>
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void HandleParserClick(object sender, EventArgs e)
         {
-            string fileName = fileNameContainer.Text;
+            string filePath = fileNameContainer.Text;
 
-            if (File.Exists(fileName) == false)
+            if (File.Exists(filePath) == false)
             {
                 MessageBox.Show("File does not exist.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            // DataSet currentXmlFileToDataSet = new DataSet();
-
             try
             {
-                // currentXmlFileToDataSet.ReadXml(fileName);
-                GetXmlToTreeView(fileName);
+                SetTreeViewFromXml(filePath);
             }
             catch (Exception exception)
             {
                 MessageBox.Show(exception.ToString(), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-
-            //if (currentXmlFileToDataSet != null && currentXmlFileToDataSet.Tables.Count > 0 && currentXmlFileToDataSet.Tables[0].Rows.Count > 0)
-            //{
-            //    mainDataGridView.DataSource = GetDataTable(currentXmlFileToDataSet);
-            //}
         }
 
-        //private DataTable GetDataTable(DataSet currentDataSet)
-        //{
-        //    return currentDataSet.Tables[0];
-        //}
-
-        private void GetXmlToTreeView(string xmlFilePath)
+        /// <summary>
+        /// <para>XML 파일에서 TreeView를 설정하는 함수</para>
+        /// <para>1. TreeView 컴포넌트의 노드 비워주기</para>
+        /// <para>2. XmlDocument(); 인스턴스 만들기 </para>
+        /// <para>3. 인스턴스에서 Load 메서드 호출하고 파일 경로 인수에 해당하는 내용을 XML로 불러오기</para>
+        /// <para>4. 현재 문서의 루트와 이름 조회하고 기초 노드를 TreeNode 형으로 반환하기</para>
+        /// <para>5. TreeView 컴포넌트의 노드에 기초 노드 대입하기</para>
+        /// <para>6. 노드 추가하는 함수 호출하기 </para>
+        /// <para>
+        ///     이때 인수는 현재 문서의 루트 및 반환된 기초 노드
+        /// </para>
+        /// </summary>
+        /// <param name="filePath"></param>
+        private void SetTreeViewFromXml(string filePath)
         {
             mainTreeView.Nodes.Clear();
 
             XmlDocument currentXmlDoc = new XmlDocument();
-            currentXmlDoc.Load(xmlFilePath);
+            currentXmlDoc.Load(filePath);
 
             TreeNode rootNode = new TreeNode(currentXmlDoc.DocumentElement.Name);
             mainTreeView.Nodes.Add(rootNode);
@@ -399,47 +346,78 @@ namespace XmlFileReader
             AddNodes(currentXmlDoc.DocumentElement, rootNode);
         }
 
-        private void AddNodes(XmlNode handlingXmlNode, TreeNode baseTreeNode)
+        /// <summary>
+        /// <para>TreeView에 노드를 추가하는 함수</para>
+        /// <para>1. 파라미터는 현재 Xml 문서와 기초 노드로 지정.</para>
+        /// <para>2. 현재 XML 문서의 ChildNodes 배열에 접근하여 순회</para>
+        /// <para>
+        ///     자식 노드가 될 TreeNode 인스턴스를 생성, 이때 인수는 순회하던 ChildNode의 이름
+        ///     이후 파라미터로 받아온 rootNode의 Nodes에 추가해줌
+        /// </para>
+        /// <para>3. 자식 노드의 자식 노드까지 생각해야 하므로 재귀 방식 호출함</para>
+        /// <para>
+        ///     순회중인 자식 노드를 현재 Xml 문서로 취급하고 자식의 기초 노드로 함수 진행
+        /// </para>
+        /// </summary>
+        /// <param name="currentXmlDoc"></param>
+        /// <param name="rootNode"></param>
+        private void AddNodes(XmlNode currentXmlDoc, TreeNode rootNode)
         {
-            foreach (XmlNode childNode in handlingXmlNode.ChildNodes)
+            foreach (XmlNode childNode in currentXmlDoc.ChildNodes)
             {
                 TreeNode childTreeNode = new TreeNode(childNode.Name);
-                baseTreeNode.Nodes.Add(childTreeNode);
+                rootNode.Nodes.Add(childTreeNode);
 
                 AddNodes(childNode, childTreeNode);
             }
         }
 
+        /// <summary>
+        /// <para>TreeView를 클릭하면 호출될 함수</para>
+        /// <para>1. TreeView에서 선택한 노드를 반환 받음</para>
+        /// <para>2. 선택한 노드의 텍스트 값을 테이블 이름으로 함 </para>
+        /// <para>3. 데이터 그리드 뷰 Set 함수 호출, 인수는 선택한 노드의 텍스트 값 == 테이블 이름 </para>
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void HandleMainTreeView(object sender, TreeViewEventArgs e)
         {
             TreeNode selectedNode = mainTreeView.SelectedNode;
             if (selectedNode != null)
             {
                 string tableName = selectedNode.Text;
-                SetDisplayTableInDataGridView(tableName);
+                SetDataGridView(tableName);
             }
         }
 
-        private void SetDisplayTableInDataGridView(string tableName)
+        /// <summary>
+        /// <para>TreeView 클릭 시 연계하여 호출될 함수</para>
+        /// <para>1. DataSet 인스턴스 생성, 이 인스턴스는 파일 전체 내용 받음</para>
+        /// <para>2. TreeView에서 선택된 노드를 반환 받음 </para>
+        /// <para>3. 선택된 노드가 있다면 조건문 수행</para>
+        /// <para>
+        ///     DataGridView의 칼럼 지우기,
+        ///     선택된 노드에서 칼럼 받아오는 함수 호출,
+        ///     현재 파일과 선택한 노드의 텍스트 값 == 테이블 이름을 인수로 데이터 테이블 가져오는 함수 호출하고
+        ///     DataGridView의 DataSource 값으로 반환하기
+        /// </para>
+        /// </summary>
+        /// <param name="tableName"></param>
+        private void SetDataGridView(string tableName)
         {
-            DataSet currentXmlFileToDataSet = new DataSet();
+            DataSet currentDataSet = new DataSet();
 
             try
             {
-                currentXmlFileToDataSet.ReadXml(fileNameContainer.Text);
+                currentDataSet.ReadXml(fileNameContainer.Text);
 
                 TreeNode selectedNode = mainTreeView.SelectedNode;
 
                 if (selectedNode != null)
                 {
-                    // Clear existing columns
                     mainDataGridView.Columns.Clear();
-
-                    // Add columns dynamically based on DataTable
-                    AddColumnsFromNode(selectedNode);
-
-                    // Set DataGridView DataSource
-                    mainDataGridView.DataSource = GetDataTable(currentXmlFileToDataSet, tableName);
+                    GetColumnsFromNode(selectedNode);
+                    mainDataGridView.DataSource = GetTableData(currentDataSet, tableName);
                 }
             }
             catch (Exception exception)
@@ -448,15 +426,48 @@ namespace XmlFileReader
             }
         }
 
-        private void AddColumnsFromNode(TreeNode node)
+        /// <summary>
+        /// <para>노드에서 칼럼 받아오는 함수</para>
+        /// <para>1. 파라미터는 TreeView에서 선택된 노드</para>
+        /// <para>2. 선택된 노드의 Nodes 배열을 순회(자식 노드로 취급)</para>
+        /// <para>3. DataGridView.Column.Add(); 메서드 호출 가능</para>
+        /// <para>
+        ///     참조될 열의 이름과 텍스트를 인수로 전달해줌
+        ///     여기에서 뭔가 제어해준다면 자식 테이블에서 칼럼 중첩을 해결할 수 있지 않을까?
+        /// </para>
+        /// </summary>
+        /// <param name="selectedNode"></param>
+        private void GetColumnsFromNode(TreeNode selectedNode)
         {
-            foreach (TreeNode childNode in node.Nodes)
+            //foreach (TreeNode childNode in selectedNode.Nodes)
+            //{
+            //    mainDataGridView.Columns.Add(childNode.Text, childNode.Text);
+            //}
+            for (int i = 0; i < selectedNode.Nodes.Count - 1; i++)
             {
-                mainDataGridView.Columns.Add(childNode.Text, childNode.Text);
+                string currentColumnName = selectedNode.Nodes[i].Text;
+                string nextColumnName = selectedNode.Nodes[i + 1].Text;
+
+                if (currentColumnName != nextColumnName) mainDataGridView.Columns.Add(currentColumnName, currentColumnName);
+            }
+
+            if (selectedNode.Nodes.Count > 0)
+            {
+                mainDataGridView.Columns.Add(selectedNode.Nodes[selectedNode.Nodes.Count - 1].Text,
+                    selectedNode.Nodes[selectedNode.Nodes.Count - 1].Text);
             }
         }
 
-        private DataTable GetDataTable(DataSet currentDataSet, string tableName)
+        /// <summary>
+        /// <para>테이블 데이터를 받는 함수</para>
+        /// <para>1. 현재 데이터 셋과 선택한 테이블 이름을 파라미터로 받음</para>
+        /// <para>2. 현재 데이터 셋이 있으며 Tables 내부에는 tableName에 해당하는 내용이 포함되어 있는지 확인</para>
+        /// <para>3. 있다면 현재 데이터 셋의 Tables중 tableName에 해당하는 값 반환하고 없다면 null</para>
+        /// </summary>
+        /// <param name="currentDataSet"></param>
+        /// <param name="tableName"></param>
+        /// <returns></returns>
+        private DataTable GetTableData(DataSet currentDataSet, string tableName)
         {
             if (currentDataSet != null && currentDataSet.Tables.Contains(tableName))
             {
