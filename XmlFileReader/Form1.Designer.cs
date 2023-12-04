@@ -4,6 +4,7 @@ using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
+using System.Xml;
 
 namespace XmlFileReader
 {
@@ -260,6 +261,7 @@ namespace XmlFileReader
             Load += HandleLoadedMainForm;
             btnFileLoader.Click += HandleLoaderClick;
             btnFileParser.Click += HandleParserClick;
+            mainTreeView.AfterSelect += HandleMainTreeView;
         }
 
         /// <summary>
@@ -365,6 +367,7 @@ namespace XmlFileReader
             try
             {
                 currentXmlFileToDataSet.ReadXml(fileName);
+                GetXmlToTreeView(fileName);
             }
             catch (Exception exception)
             {
@@ -372,16 +375,94 @@ namespace XmlFileReader
                 return;
             }
 
-            if (currentXmlFileToDataSet != null && currentXmlFileToDataSet.Tables.Count > 0 && currentXmlFileToDataSet.Tables[0].Rows.Count > 0)
+            //if (currentXmlFileToDataSet != null && currentXmlFileToDataSet.Tables.Count > 0 && currentXmlFileToDataSet.Tables[0].Rows.Count > 0)
+            //{
+            //    mainDataGridView.DataSource = GetDataTable(currentXmlFileToDataSet);
+            //}
+        }
+
+        //private DataTable GetDataTable(DataSet currentDataSet)
+        //{
+        //    return currentDataSet.Tables[0];
+        //}
+
+        private void GetXmlToTreeView(string xmlFilePath)
+        {
+            mainTreeView.Nodes.Clear();
+
+            XmlDocument currentXmlDoc = new XmlDocument();
+            currentXmlDoc.Load(xmlFilePath);
+
+            TreeNode rootNode = new TreeNode(currentXmlDoc.DocumentElement.Name);
+            mainTreeView.Nodes.Add(rootNode);
+
+            AddNodes(currentXmlDoc.DocumentElement, rootNode);
+        }
+
+        private void AddNodes(XmlNode handlingXmlNode, TreeNode baseTreeNode)
+        {
+            foreach (XmlNode childNode in handlingXmlNode.ChildNodes)
             {
-                mainDataGridView.DataSource = GetDataTable(currentXmlFileToDataSet);
+                TreeNode childTreeNode = new TreeNode(childNode.Name);
+                baseTreeNode.Nodes.Add(childTreeNode);
+
+                AddNodes(childNode, childTreeNode);
             }
         }
 
-        private DataTable GetDataTable(DataSet currentDataSet)
+        private void HandleMainTreeView(object sender, TreeViewEventArgs e)
         {
-            return currentDataSet.Tables[0];
+            TreeNode selectedNode = mainTreeView.SelectedNode;
+            if (selectedNode != null)
+            {
+                string tableName = selectedNode.Text;
+                SetDisplayTableInDataGridView(tableName);
+            }
+        }
+
+        private void SetDisplayTableInDataGridView(string tableName)
+        {
+            DataSet currentXmlFileToDataSet = new DataSet();
+
+            try
+            {
+                currentXmlFileToDataSet.ReadXml(fileNameContainer.Text);
+
+                TreeNode selectedNode = mainTreeView.SelectedNode;
+
+                if (selectedNode != null)
+                {
+                    // Clear existing columns
+                    mainDataGridView.Columns.Clear();
+
+                    // Add columns dynamically based on DataTable
+                    AddColumnsFromNode(selectedNode);
+
+                    // Set DataGridView DataSource
+                    mainDataGridView.DataSource = GetDataTable(currentXmlFileToDataSet, tableName);
+                }
+            }
+            catch (Exception exception)
+            {
+                MessageBox.Show(exception.ToString(), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void AddColumnsFromNode(TreeNode node)
+        {
+            foreach (TreeNode childNode in node.Nodes)
+            {
+                mainDataGridView.Columns.Add(childNode.Text, childNode.Text);
+            }
+        }
+
+        private DataTable GetDataTable(DataSet currentDataSet, string tableName)
+        {
+            if (currentDataSet != null && currentDataSet.Tables.Contains(tableName))
+            {
+                return currentDataSet.Tables[tableName];
+            }
+            return null;
         }
     }
 }
-
